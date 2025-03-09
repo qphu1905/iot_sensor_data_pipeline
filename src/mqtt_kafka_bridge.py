@@ -1,6 +1,7 @@
 import sys
 import time
-import keyboard
+import json
+import kafka
 import paho.mqtt.client as mqtt
 from Config import Config
 from my_logger import my_logger
@@ -18,7 +19,7 @@ def mqtt_connect():
 
     broker = Config.BROKER_ADDRESS
     port = Config.BROKER_PORT
-    client_id:str = 'DATA_LISTENER'
+    client_id:str = 'MQTT_KAFKA_BRIDGE'
     username:str = Config.USERNAME
     password:str = Config.PASSWORD
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id=client_id)
@@ -29,52 +30,46 @@ def mqtt_connect():
     return client
 
 
-def mqtt_disconnect(client):
-    def on_disconnect(client, userdata, flags, reason_code, properties):
-        if reason_code == 0:
-            logger.info("Disconnected from MQTT Broker successfully!")
-            sys.exit(0)
-        else:
-            logger.error(f"Problem with connection: {reason_code}.")
-            logger.infor(f"Attempting to reconnect")
-            client.reconnect()
+def kafka_create_producer():
+    bootstrap_servers = Config.BOOTSTRAP_SERVERS
+    client_id:str = 'MQTT_KAFKA_BRIDGE'
+    producer = kafka.KafkaProducer(
+        bootstrap_servers=bootstrap_servers,
+        client_id=client_id)
+    return producer
 
 
-    client.on_disconnect = on_disconnect
-    client.loop_stop()
-    client.disconnect()
-
-
-def subscribe(client, TOPICS:list[str]):
+def mqtt_subscribe(client, TOPICS:list[str]):
     def on_subscribe(client, userdata, mid, reason_code_list, properties):
         if reason_code_list[0].is_failure:
             logger.error(f"Broker rejected subscription of {topic} with reason code: {reason_code_list[0]}.")
-            sys.exit(0)
+            sys.exit(1)
         else:
             logger.info(f"Broker granted QoS: {reason_code_list[0].value}")
-
-
-    def on_message(client, userdata, msg):
-        print(f'Received message: {msg.payload.decode()} from topic: {msg.topic}')
-
-
-    client.on_message = on_message
     client.on_subscribe = on_subscribe
     for topic in TOPICS:
         client.subscribe(topic)
         logger.info(f"Attempting to subscribe to topic: {topic}")
-        time.sleep(3)
+        time.sleep(1)
+
+
+def mqtt_message(mqtt_client, kafka_producer):
+    def on_message(client, userdata, msg):
+        payload = json.loads(msg.payload.decode("utf-8"))
+        logger.info(f"Received message: {payload} from topic: {msg.topic}")
+        message = json.dumps(payload).encode("utf-8")
+        kafka_producer.send(topic=f"{msg.topic}", value=message)
+        kafka_producer.flush()
+    mqtt_client.on_message = on_message
 
 
 def main():
     mqtt_client = mqtt_connect()
+    kafka_producer = kafka_create_producer()
     time.sleep(3)
-    subscribe(mqtt_client, Config.TOPICS)
+    mqtt_subscribe(mqtt_client, Config.TOPICS)
+    mqtt_message(mqtt_client, kafka_producer)
     mqtt_client.loop_forever()
-    while True:
-        if keyboard.read_key().lower() == 'q':
-            mqtt_disconnect(mqtt_client)
-
 
 if __name__ == '__main__':
     main()
