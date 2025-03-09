@@ -30,8 +30,7 @@ def mqtt_connect():
     return client
 
 
-def kafka_create_producer():
-    bootstrap_servers = Config.BOOTSTRAP_SERVERS
+def kafka_create_producer(bootstrap_servers:list[str]):
     client_id:str = 'MQTT_KAFKA_BRIDGE'
     producer = kafka.KafkaProducer(
         bootstrap_servers=bootstrap_servers,
@@ -65,7 +64,7 @@ def mqtt_message(mqtt_client, kafka_producer):
 
 def main():
     mqtt_client = mqtt_connect()
-    kafka_producer = kafka_create_producer()
+    kafka_producer = kafka_create_producer(Config.TOPICS)
     time.sleep(3)
     mqtt_subscribe(mqtt_client, Config.TOPICS)
     mqtt_message(mqtt_client, kafka_producer)
