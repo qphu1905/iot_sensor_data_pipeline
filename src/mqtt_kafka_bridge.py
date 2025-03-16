@@ -64,7 +64,7 @@ def mqtt_message(mqtt_client, kafka_producer):
 
 def main():
     mqtt_client = mqtt_connect()
-    kafka_producer = kafka_create_producer(Config.TOPICS)
+    kafka_producer = kafka_create_producer(Config.BOOTSTRAP_SERVERS)
     time.sleep(3)
     mqtt_subscribe(mqtt_client, Config.TOPICS)
     mqtt_message(mqtt_client, kafka_producer)
