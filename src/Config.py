@@ -4,5 +4,5 @@ class Config:
     CERTIFICATE_FILE:str = '../emqxsl-ca.crt'
     USERNAME:str = 'quocphu'
     PASSWORD:str = '190505'
-    TOPICS:list[str] = ['TEMPERATURE', 'PRESSURE']
+    TOPICS:list[str] = ['RAW_DATA']
     BOOTSTRAP_SERVERS: list[str]= ['localhost:9092']
