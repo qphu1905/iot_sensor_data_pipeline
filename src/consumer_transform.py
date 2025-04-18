@@ -1,11 +1,15 @@
+import sys
+if sys.version_info >= (3, 12, 0):
+    import six
+    sys.modules['kafka.vendor.six.moves'] = six.moves
+
 import kafka
 import json
-import pandas as pd
 import datetime
 from Config import Config
 
 
-def calculate_apparent_temperature(temp: float, rh: int) -> float:
+def calculate_apparent_temperature(temperature: float, humidity: float) -> float:
     c1: float = -8.78469475556
     c2: float = 1.61139411
     c3: float = 2.33854883889
@@ -15,29 +19,32 @@ def calculate_apparent_temperature(temp: float, rh: int) -> float:
     c7: float = 2.211732 * 10**(-3)
     c8: float = 7.2546 * 10**(-4)
     c9: float = -3.582 * 10**(-6)
-    if temp < 27:
-        return temp
-    elif temp > 66:
-        return temp
+    if temperature < 27:
+        return temperature
+    elif temperature > 66:
+        return temperature
     else:
-        apparent_temp: float = (c1 + c2 * temp + c3 * rh
-                                + c4 * temp * rh + c5 * (temp**2)+ c6 * (rh**2)
-                                + c7 * (temp**2) * rh + c8 * temp * (rh**2) + c9 * (temp**2) * (rh**2))
-        return apparent_temp
+        apparent_temperature: float = (c1 + c2 * temperature + c3 * humidity
+                                + c4 * temperature * humidity + c5 * (temperature**2)+ c6 * (humidity**2)
+                                + c7 * (temperature**2) * humidity + c8 * temperature * (humidity**2) + c9 * (temperature**2) * (humidity**2))
+        return apparent_temperature
 
 # NEED TO FIX TRANSFORM
-def transform(df: pd.DataFrame) -> pd.DataFrame:
-    time: datetime = datetime.datetime.now()
-    temp: float = df['temp']
-    rh: int = df['rh']
-    apparent_temp: float = calculate_apparent_temperature(temp, rh)
-    df.insert(loc=0, column='time', value=time)
-    df.insert(loc=-1, column='apparent_temp', value=apparent_temp)
-    return df
+def transform(msg: dict) -> dict:
+    temperature = msg['temperature']
+    humidity = msg['humidity']
+    feels_like_temperature = calculate_apparent_temperature(temperature, humidity)
+    time_id = datetime.datetime.now().strftime('%H:%M:%S')
+    date_id = datetime.datetime.now().strftime('%Y-%m-%d')
+    msg['feels_like_temperature'] = feels_like_temperature
+    msg['time_id'] = time_id
+    msg['date_id'] = date_id
+    print(msg)
+    return msg
 
 
 def kafka_consumer(bootstrap_servers: list[str]):
-    consumer = kafka.KafkaConsumer('RAW_DATA',
+    consumer = kafka.KafkaConsumer('RAW-DATA',
                                    bootstrap_servers=bootstrap_servers,
                                    client_id='TRANSFORM',
                                    value_deserializer=lambda m: json.loads(m.decode('utf-8'))
@@ -57,13 +64,8 @@ def main():
     producer = kafka_producer(Config.BOOTSTRAP_SERVERS)
     # NEED TO FIX TRANSFORM DATAFRAME NOT COMPATIBLE
     for msg in consumer:
-        print(msg)
-        print(msg.value)
-        print(msg.value.items())
-        df = pd.json_normalize(msg.value)
-        df = transform(df)
-        msg = df.to_json().encode('utf-8')
-        producer.send(topic='RAW_DATA', value=msg)
+        transformed_msg = json.dumps(transform(msg.value)).encode('utf-8')
+        producer.send(topic='TRANSFORMED-DATA', value=transformed_msg)
 
 
 if __name__ == '__main__':
