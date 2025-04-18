@@ -20,7 +20,7 @@ logger = my_logger(__name__)
 kafka_consumer_topic = 'TRANSFORMED-DATA'
 
 
-def kafka_create_consumer(bootstrap_servers: list[str]):
+def kafka_create_consumer(bootstrap_servers: list[str]) -> kafka.KafkaConsumer:
     """Create Kafka consumer, consumer deserialize message from Kafka broker
     :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
     :return: kafka_consumer: KafkaConsumer
@@ -34,7 +34,7 @@ def kafka_create_consumer(bootstrap_servers: list[str]):
     return kafka_consumer
 
 
-def create_database_engine():
+def create_database_engine() -> db.engine.Engine:
     """Create postgresql database engine
     :parameter: None
     :return: db_engine: sqlalchemy.engine.Engine
@@ -46,6 +46,11 @@ def create_database_engine():
 
 
 def create_entry(message: dict) -> dict:
+    """Create entry to be inserted in database
+    :parameter: message: dict
+    :return: entry: dict
+    """
+
     entry = {
         "location_id": message['location'],
         "temperature": message['temperature'],
@@ -54,3 +59,28 @@ def create_entry(message: dict) -> dict:
         "time_id": message['time_id']
     }
     return entry
+
+
+def main():
+    kafka_consumer = kafka_create_consumer(Config.BOOTSTRAP_SERVERS)
+    db_engine = create_database_engine()
+    db_metadata = db.MetaData()
+    weather_data = db.Table('weather_data', db_metadata, autoload_with=db_engine)
+
+    #buffer to avoid individual insert statements
+    buffer = []
+
+    for message in kafka_consumer:
+        message_value = message.value
+        entry = create_entry(message_value)
+        buffer.append(entry)
+
+        if len(buffer) >= 100:
+            with db_engine.begin() as conn:
+                transaction = weather_data.insert()
+                conn.execute(transaction, buffer)
+            #clear buffer after writing to database
+            buffer = []
+
+if __name__ == '__main__':
+    main()
