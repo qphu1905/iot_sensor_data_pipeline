@@ -77,7 +77,7 @@ def kafka_create_consumer(bootstrap_servers: list[str]):
     :return: kafka_consumer: KafkaConsumer
     """
 
-    kafka_consumer = kafka.KafkaConsumer(kafka_producer_topic,
+    kafka_consumer = kafka.KafkaConsumer(kafka_consumer_topic,
                                          bootstrap_servers=bootstrap_servers,
                                          client_id='TRANSFORM-CONSUMER',
                                          value_deserializer=lambda m: json.loads(m.decode('utf-8')))
@@ -106,7 +106,7 @@ def main():
     for message in kafka_consumer:
         #transform, encode, serialize, then send message
         transformed_message = json.dumps(transform(message.value)).encode('utf-8')
-        kafka_producer.send(topic='TRANSFORMED-DATA', value=transformed_message)
+        kafka_producer.send(topic=kafka_producer_topic, value=transformed_message)
         logger.info('Transformed message sent!')
 
 if __name__ == '__main__':
