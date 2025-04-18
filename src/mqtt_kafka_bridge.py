@@ -11,10 +11,10 @@ import paho.mqtt.client as mqtt
 from Config import Config
 from my_logger import my_logger
 
-#Initialize logger
+#initialize logger
 logger = my_logger(__name__)
 
-#Topics to subscribe
+#topics to subscribe
 mqtt_source_topic = 'RAW-DATA'
 kafka_producer_topic = 'RAW-DATA'
 
@@ -41,7 +41,7 @@ def mqtt_connect():
     username:str = Config.USERNAME
     password:str = Config.PASSWORD
 
-    #Create MQTT client and connect
+    #create MQTT client and connect
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
     mqtt_client.tls_set(Config.CERTIFICATE_FILE)
     mqtt_client.username_pw_set(username=username, password=password)
@@ -54,7 +54,7 @@ def mqtt_subscribe(mqtt_client):
     """Subscribe to MQTT broker topic
     :parameter: mqtt_client: mqtt.client
     :return: None
-    :raises: Exception: Failed subscription raises error with reason code\
+    :raises: Exception: failed subscription raises error with reason code
     """
 
     #action on on_subscribe callback
