@@ -71,7 +71,7 @@ def transform(message: dict) -> dict:
     return message
 
 
-def kafka_create_consumer(bootstrap_servers: list[str]):
+def kafka_create_consumer(bootstrap_servers: list[str]) -> kafka.KafkaConsumer:
     """Create Kafka consumer, consumer deserialize message from Kafka broker
     :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
     :return: kafka_consumer: KafkaConsumer
@@ -85,7 +85,7 @@ def kafka_create_consumer(bootstrap_servers: list[str]):
     return kafka_consumer
 
 
-def kafka_create_producer(bootstrap_servers: list[str]):
+def kafka_create_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
     """Create Kafka producer
     :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
     :return: kafka_producer: KafkaProducer
