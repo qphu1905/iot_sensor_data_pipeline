@@ -4,12 +4,12 @@ if sys.version_info >= (3, 12, 0):
     import six
     sys.modules['kafka.vendor.six.moves'] = six.moves
 
-import time
 import json
 import kafka
 import paho.mqtt.client as mqtt
 from Config import Config
 from my_logger import my_logger
+
 
 #initialize logger
 logger = my_logger(__name__)
@@ -18,7 +18,8 @@ logger = my_logger(__name__)
 mqtt_source_topic = 'RAW-DATA'
 kafka_producer_topic = 'RAW-DATA'
 
-def mqtt_connect():
+
+def mqtt_connect() -> mqtt.Client:
     """Connect to MQTT broker
     :parameter: None
     :return: mqtt_client: mqtt.client
@@ -50,7 +51,7 @@ def mqtt_connect():
     return mqtt_client
 
 
-def mqtt_subscribe(mqtt_client):
+def mqtt_subscribe(mqtt_client: mqtt.Client) -> None:
     """Subscribe to MQTT broker topic
     :parameter: mqtt_client: mqtt.client
     :return: None
@@ -68,10 +69,9 @@ def mqtt_subscribe(mqtt_client):
     mqtt_client.on_subscribe = on_subscribe
     mqtt_client.subscribe(mqtt_source_topic)
     logger.info(f"Attempting to subscribe to topic")
-    time.sleep(1)
 
 
-def mqtt_message(mqtt_client, kafka_producer):
+def mqtt_message(mqtt_client: mqtt.Client, kafka_producer: kafka.KafkaProducer) -> None:
     """Receive message from MQTT broker and bridge that message to Kafka broker
     :parameter: mqtt_client: mqtt.client
     :parameter: kafka_producer: KafkaProducer
@@ -93,7 +93,7 @@ def mqtt_message(mqtt_client, kafka_producer):
     mqtt_client.on_message = on_message
 
 
-def kafka_create_producer(bootstrap_servers:list[str]):
+def kafka_create_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
     """Create Kafka producer
     :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
     :return: kafka_producer: KafkaProducer
@@ -114,7 +114,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
