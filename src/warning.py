@@ -15,9 +15,15 @@ logger = my_logger(__name__)
 
 #Topics to subscribe
 kafka_consumer_topic = 'TRANSFORMED-DATA'
+kafka_producer_topic = 'WARNING'
 
 
 def warning(apparent_temperature: float) -> int:
+    """Calculate warning level for give apparent temperature.
+    :parameter: apparent_temperature: float
+    :return: warning_level: int
+    """
+
     if apparent_temperature <= 27:
         warning_level = 0
     elif 27.0 < apparent_temperature <= 32.0:
@@ -59,5 +65,32 @@ def create_kafka_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
     return kafka_producer
 
 
+def main():
+    #create kafka consumer
+    kafka_consumer = create_kafka_consumer(bootstrap_servers=Config.BOOTSTRAP_SERVERS)
+    #create kafka producer
+    kafka_producer = create_kafka_producer(bootstrap_servers=Config.BOOTSTRAP_SERVERS)
+
+    for message in kafka_consumer:
+        #get shaded apparent temperature
+        apparent_temperature_shaded = message.value['apparent_temperature']
+        #get direct sunshine apparent temperature
+        apparent_temperature_sunshine = apparent_temperature_shaded + 8
+
+        #calculate warning level
+        warning_level_shaded = warning(apparent_temperature_shaded)
+        warning_level_sunshine = warning(apparent_temperature_sunshine)
+
+        #create and serialize message
+        warnings = {
+                    'warning_level_shaded': warning_level_shaded,
+                    'warning_level_sunshine': warning_level_sunshine
+                    }
+        warnings_message = json.dumps(warnings).encode('utf-8')
+
+        #send message
+        kafka_producer.send(kafka_producer_topic, value=warnings_message)
 
 
+if __name__ == '__main__':
+    main()
