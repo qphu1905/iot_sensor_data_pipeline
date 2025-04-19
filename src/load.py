@@ -20,6 +20,22 @@ logger = my_logger(__name__)
 kafka_consumer_topic = 'TRANSFORMED-DATA'
 
 
+def create_entry(message: dict) -> dict:
+    """Create entry to be inserted in database
+    :parameter: message: dict
+    :return: entry: dict
+    """
+
+    entry = {
+        "location_id": message['location'],
+        "temperature": message['temperature'],
+        "humidity": message['humidity'],
+        "date_id": message['date_id'],
+        "time_id": message['time_id']
+    }
+    return entry
+
+
 def kafka_create_consumer(bootstrap_servers: list[str]) -> kafka.KafkaConsumer:
     """Create Kafka consumer, consumer deserialize message from Kafka broker
     :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
@@ -43,22 +59,6 @@ def create_database_engine() -> db.engine.Engine:
     db_engine = db.create_engine('postgresql+psycopg2://qphu1905:%s@192.168.1.210:5432/iot_sensor_data' % quote_plus('Quocphu!@#123'))
     logger.info('Database engine created!')
     return db_engine
-
-
-def create_entry(message: dict) -> dict:
-    """Create entry to be inserted in database
-    :parameter: message: dict
-    :return: entry: dict
-    """
-
-    entry = {
-        "location_id": message['location'],
-        "temperature": message['temperature'],
-        "humidity": message['humidity'],
-        "date_id": message['date_id'],
-        "time_id": message['time_id']
-    }
-    return entry
 
 
 def main():
