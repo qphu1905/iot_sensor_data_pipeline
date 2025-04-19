@@ -36,17 +36,20 @@ def calculate_apparent_temperature(temperature: float, humidity: float) -> float
     c8: float = 7.2546 * 10 ** (-4)
     c9: float = -3.582 * 10 ** (-6)
 
+    if humidity < 0.40:
+        return temperature
     #lower limit of heat index
-    if temperature < 27:
-        return temperature
-    #upper limit of heat index
-    elif temperature > 66:
-        return temperature
     else:
-        apparent_temperature: float = (c1 + c2 * temperature + c3 * humidity
-                                + c4 * temperature * humidity + c5 * (temperature**2)+ c6 * (humidity**2)
-                                + c7 * (temperature**2) * humidity + c8 * temperature * (humidity**2) + c9 * (temperature**2) * (humidity**2))
-        return apparent_temperature
+        if temperature < 27:
+            return temperature
+        #upper limit of heat index
+        elif temperature > 66:
+            return temperature
+        else:
+            apparent_temperature: float = (c1 + c2 * temperature + c3 * humidity
+                                    + c4 * temperature * humidity + c5 * (temperature**2)+ c6 * (humidity**2)
+                                    + c7 * (temperature**2) * humidity + c8 * temperature * (humidity**2) + c9 * (temperature**2) * (humidity**2))
+            return apparent_temperature
 
 
 def transform(message: dict) -> dict:
