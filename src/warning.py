@@ -33,4 +33,31 @@ def warning(apparent_temperature: float) -> int:
     return warning_level
 
 
+def create_kafka_consumer(bootstrap_servers: list[str]) -> kafka.KafkaConsumer:
+    """Create Kafka consumer, consumer deserialize message from Kafka broker
+    :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
+    :return: kafka_consumer: KafkaConsumer
+    """
+
+    kafka_consumer = kafka.KafkaConsumer(kafka_consumer_topic,
+                                         bootstrap_servers=bootstrap_servers,
+                                         client_id='WARNING-CONSUMER',
+                                         value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+    logger.info('Kafka consumer created!')
+    return kafka_consumer
+
+
+def create_kafka_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
+    """Create Kafka producer
+    :parameter: bootstrap_servers: list[str]: list of Kafka broker adresses
+    :return: kafka_producer: KafkaProducer
+    """
+
+    kafka_producer = kafka.KafkaProducer(bootstrap_servers=bootstrap_servers,
+                                         client_id='WARNING-PRODUCER')
+    logger.info('Kafka producer created!')
+    return kafka_producer
+
+
+
 
