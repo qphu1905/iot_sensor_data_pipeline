@@ -79,6 +79,7 @@ def main():
             with db_engine.begin() as conn:
                 transaction = weather_data.insert()
                 conn.execute(transaction, buffer)
+                logger.info(f'{len(buffer)} entries inserted!')
             #clear buffer after writing to database
             buffer = []
 
