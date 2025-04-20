@@ -6,9 +6,13 @@ if sys.version_info >= (3, 12, 0):
 
 import kafka
 import json
-from Config import Config
+from dotenv import dotenv_values, find_dotenv
+
 from my_logger import my_logger
 
+#load environment variables
+dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
+KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
 
 #initialize logger
 logger = my_logger(__name__)

@@ -8,10 +8,20 @@ from urllib.parse import quote_plus
 import kafka
 import sqlalchemy as db
 import json
+from dotenv import dotenv_values, find_dotenv
 
-from Config import Config
 from my_logger import my_logger
 
+
+#load environment variables
+dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
+secret_config = dotenv_values(find_dotenv(".env/.env.secret"))
+
+POSTGRES_SERVER_ADDRESS = dev_config['POSTGRES_SERVER_ADDRESS']
+POSTGRES_USERNAME = secret_config['POSTGRES_USERNAME']
+POSTGRES_PASSWORD = secret_config['POSTGRES_PASSWORD']
+
+KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
 
 #initialize logger
 logger = my_logger(__name__)
@@ -56,13 +66,13 @@ def create_database_engine() -> db.engine.Engine:
     :return: db_engine: sqlalchemy.engine.Engine
     """
 
-    db_engine = db.create_engine('postgresql+psycopg2://qphu1905:%s@192.168.1.210:5432/iot_sensor_data' % quote_plus('Quocphu!@#123'))
+    db_engine = db.create_engine(f'postgresql+psycopg2://{POSTGRES_USERNAME}:%s@{POSTGRES_SERVER_ADDRESS}/iot_sensor_data' % quote_plus(POSTGRES_PASSWORD))
     logger.info('Database engine created!')
     return db_engine
 
 
 def main():
-    kafka_consumer = kafka_create_consumer(Config.BOOTSTRAP_SERVERS)
+    kafka_consumer = kafka_create_consumer(KAFKA_BROKER_ADDRESS)
     db_engine = create_database_engine()
     db_metadata = db.MetaData()
     weather_data = db.Table('weather_data', db_metadata, autoload_with=db_engine)
