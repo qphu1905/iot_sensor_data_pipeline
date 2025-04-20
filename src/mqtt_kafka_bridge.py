@@ -7,9 +7,21 @@ if sys.version_info >= (3, 12, 0):
 import json
 import kafka
 import paho.mqtt.client as mqtt
-from Config import Config
+from dotenv import dotenv_values, find_dotenv
+
 from my_logger import my_logger
 
+#load environment variables
+dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
+secret_config = dotenv_values(find_dotenv(".env/.env.secret"))
+
+MQTT_BROKER_ADDRESS = dev_config['MQTT_BROKER_ADDRESS']
+MQTT_BROKER_PORT = int(dev_config['MQTT_BROKER_PORT'])
+MQTT_BROKER_USERNAME = secret_config['MQTT_BROKER_USERNAME']
+MQTT_BROKER_PASSWORD = secret_config['MQTT_BROKER_PASSWORD']
+MQTT_BROKER_CERT = secret_config['MQTT_BROKER_CERT']
+
+KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
 
 #initialize logger
 logger = my_logger(__name__)
@@ -34,20 +46,20 @@ def mqtt_connect() -> mqtt.Client:
             raise ConnectionError(f"Connection failed with result code: {reason_code}.")
 
     #MQTT broker parameters
-    broker = Config.BROKER_ADDRESS
-    port = Config.BROKER_PORT
+    broker_address = MQTT_BROKER_ADDRESS
+    broker_port = MQTT_BROKER_PORT
 
     #MQTT cloud service account
     client_id:str = 'MQTT_KAFKA_BRIDGE'
-    username:str = Config.USERNAME
-    password:str = Config.PASSWORD
+    username:str = MQTT_BROKER_USERNAME
+    password:str = MQTT_BROKER_PASSWORD
 
     #create MQTT client and connect
     mqtt_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id=client_id)
-    mqtt_client.tls_set(Config.CERTIFICATE_FILE)
+    mqtt_client.tls_set(MQTT_BROKER_CERT)
     mqtt_client.username_pw_set(username=username, password=password)
     mqtt_client.on_connect = on_connect
-    mqtt_client.connect(broker, port)
+    mqtt_client.connect(broker_address, broker_port)
     return mqtt_client
 
 
@@ -107,7 +119,7 @@ def kafka_create_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
 
 def main():
     mqtt_client = mqtt_connect()
-    kafka_producer = kafka_create_producer(Config.BOOTSTRAP_SERVERS)
+    kafka_producer = kafka_create_producer(KAFKA_BROKER_ADDRESS)
     mqtt_subscribe(mqtt_client)
     mqtt_message(mqtt_client, kafka_producer)
     mqtt_client.loop_forever()
