@@ -7,8 +7,14 @@ if sys.version_info >= (3, 12, 0):
 import kafka
 import json
 import datetime
-from Config import Config
+from dotenv import dotenv_values, find_dotenv
+
 from my_logger import my_logger
+
+
+#load environment variables
+dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
+KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
 
 #initialize logger
 logger = my_logger(__name__)
@@ -102,9 +108,9 @@ def kafka_create_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
 
 def main():
     #create kafka consumer
-    kafka_consumer = kafka_create_consumer(Config.BOOTSTRAP_SERVERS)
+    kafka_consumer = kafka_create_consumer(KAFKA_BROKER_ADDRESS)
     #create kafka producer
-    kafka_producer = kafka_create_producer(Config.BOOTSTRAP_SERVERS)
+    kafka_producer = kafka_create_producer(KAFKA_BROKER_ADDRESS)
 
     for message in kafka_consumer:
         #transform, encode, serialize, then send message
