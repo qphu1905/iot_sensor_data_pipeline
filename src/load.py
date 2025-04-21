@@ -40,6 +40,7 @@ def create_entry(message: dict) -> dict:
         "location_id": message['location'],
         "temperature": message['temperature'],
         "humidity": message['humidity'],
+        "feels_like_temperature": message['feels_like_temperature'],
         "date_id": message['date_id'],
         "time_id": message['time_id']
     }
@@ -55,7 +56,8 @@ def kafka_create_consumer(bootstrap_servers: list[str]) -> kafka.KafkaConsumer:
     kafka_consumer = kafka.KafkaConsumer(kafka_consumer_topic,
                                          bootstrap_servers=bootstrap_servers,
                                          client_id='LOAD-CONSUMER',
-                                         value_deserializer=lambda m: json.loads(m.decode('utf-8')))
+                                         value_deserializer=lambda m: json.loads(m.decode('utf-8')),
+                                         consumer_timeout_ms=300000)
     logger.info('Kafka consumer created!')
     return kafka_consumer
 
@@ -93,5 +95,15 @@ def main():
             #clear buffer after writing to database
             buffer = []
 
+    #write straggle messages to database
+    if len(buffer) > 0:
+        with db_engine.begin() as conn:
+            transaction = weather_data.insert()
+            conn.execute(transaction, buffer)
+            logger.info(f'{len(buffer)} straggle entries inserted!')
+        #clear buffer after writing to database
+        buffer = []
+
 if __name__ == '__main__':
-    main()
+    while True:
+        main()
