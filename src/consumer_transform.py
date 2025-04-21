@@ -70,7 +70,7 @@ def transform(message: dict) -> dict:
     feels_like_temperature = calculate_apparent_temperature(temperature, humidity)
 
     #calculate timestamp
-    time_id = datetime.datetime.now().strftime('%H:%M:%S')
+    time_id = datetime.datetime.now().strftime('%H:%M:00')
     date_id = datetime.datetime.now().strftime('%Y-%m-%d')
 
     #transform message
