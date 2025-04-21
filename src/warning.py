@@ -71,9 +71,9 @@ def create_kafka_producer(bootstrap_servers: list[str]) -> kafka.KafkaProducer:
 
 def main():
     #create kafka consumer
-    kafka_consumer = create_kafka_consumer(bootstrap_servers=Config.BOOTSTRAP_SERVERS)
+    kafka_consumer = create_kafka_consumer(bootstrap_servers=KAFKA_BROKER_ADDRESS)
     #create kafka producer
-    kafka_producer = create_kafka_producer(bootstrap_servers=Config.BOOTSTRAP_SERVERS)
+    kafka_producer = create_kafka_producer(bootstrap_servers=KAFKA_BROKER_ADDRESS)
 
     for message in kafka_consumer:
         #get shaded apparent temperature
@@ -87,6 +87,7 @@ def main():
 
         #create and serialize message
         warnings = {
+                    'location': message.value['location'],
                     'warning_level_shaded': warning_level_shaded,
                     'warning_level_sunshine': warning_level_sunshine
                     }
