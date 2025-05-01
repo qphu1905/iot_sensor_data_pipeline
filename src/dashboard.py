@@ -131,21 +131,3 @@ def main():
             st.metric('Humidity', f'{humidity}%', border=3)
 
 main()
-# st.title('Dashboard')
-# city = st.selectbox('Choose city', ['Frankfurt', 'Munchen'], placeholder='Choose city', index=None)
-# date_range = st.checkbox('Date Range')
-# if date_range:
-#     start_date = st.date_input('Start Date')
-#     end_date = st.date_input("End_date")
-# else:
-#     date = st.date_input('Date')
-# col1, col2, col3 = st.columns(3, border=3)
-# with col1:
-#     col1.metric('TEMPERATURE', 20)
-# with col2:
-#     col2.metric('PRESSURE', 10)
-# with col3:
-#     col3.metric('WIND', 10)
-# row1 = st.container()
-# with row1:
-#     row1.metric('Warning', 10, border=3)
