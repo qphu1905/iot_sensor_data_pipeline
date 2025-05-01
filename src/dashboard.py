@@ -63,7 +63,6 @@ def load_weather_data(db_engine, location_name):
             )
         result = connection.execute(stmt)
     df = pd.DataFrame(result)
-    print(df)
     return df
 
 
@@ -83,10 +82,40 @@ def load_location_data(db_engine):
     return result
 
 
-def filter_daily(df: pd.DataFrame, location_name='Mainz', date_id=date(2025, 4, 25)) -> pd.DataFrame:
-    print(df['location_name'])
+def filter_daily(df: pd.DataFrame, date_id, groupby) -> pd.DataFrame:
     mask = df['date_id'] == date_id
-    df = df[mask].dropna().reset_index(drop=True)
+    df[mask].dropna().reset_index(drop=True)
+    if groupby == 'minute':
+        df = df[['temperature', 'feels_like_temperature', 'humidity', 'hour', 'minute']]
+        df = df.groupby(['hour', 'minute']).mean().dropna().reset_index().sort_values(by=['hour', 'minute'])
+    elif groupby == 'hour':
+        df = df[['temperature', 'feels_like_temperature', 'humidity', 'hour']]
+        df = df.groupby(['hour']).mean().dropna().reset_index().sort_values(by=['hour'])
+    else:
+        #implement throwing wrong parameter error here
+        pass
+    return df
+
+
+def filter_period(df: pd.DataFrame, start_date_id, end_date_id, groupby) -> pd.DataFrame:
+    mask = df['date_id'].between(start_date_id, end_date_id)
+    df[mask].dropna().reset_index(drop=True)
+    if groupby == 'day':
+        df = df[['temperature', 'feels_like_temperature', 'humidity', 'year', 'month', 'day']]
+        df = df.groupby(['year', 'month', 'day']).mean().dropna().reset_index().sort_values(by=['year', 'month', 'day'])
+
+    elif groupby == 'month':
+        df = df[['temperature', 'feels_like_temperature', 'humidity', 'year', 'month']]
+        df = df.groupby(['year', 'month']).mean().dropna().reset_index().sort_values(by=['year', 'month'])
+    elif groupby == 'year':
+        df = df[['temperature', 'feels_like_temperature', 'humidity', 'year']]
+        df = df.groupby(['year']).mean().dropna().reset_index().sort_values(by=['year'])
+    else:
+        #implement throwing wrong parameter error here
+        pass
+    print(df)
+    return df
+
 
 def main():
     db_engine = create_database_engine()
@@ -129,5 +158,6 @@ def main():
             st.metric('Feels Like', feels_like_temperature, border=3)
         with col3:
             st.metric('Humidity', f'{humidity}%', border=3)
+
 
 main()
