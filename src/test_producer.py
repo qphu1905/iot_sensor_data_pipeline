@@ -39,11 +39,11 @@ locations = ['F', 'M', 'MZ']
 while True:
     location = locations[random.randint(0, len(locations) - 1)]
     temperature = round(random.uniform(0, 60), 2)
-    humidity = round(random.uniform(0, 1), 2)
+    humidity = random.randint(0, 100)
     msg = json.dumps({'location': location, 'temperature': temperature, 'humidity': humidity}).encode('utf-8')
     kafka_producer.send(kafka_producer_topic, msg)
     print(msg)
     kafka_producer.flush()
-    time.sleep(0.1)
+    time.sleep(60)
 
 
