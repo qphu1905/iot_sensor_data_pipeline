@@ -4,13 +4,13 @@ if sys.version_info >= (3, 12, 0):
     import six
     sys.modules['kafka.vendor.six.moves'] = six.moves
 
-import kafka
-import json
 import datetime
+import json
+
+import kafka
 from dotenv import dotenv_values, find_dotenv
 
 from my_logger import my_logger
-
 
 #load environment variables
 dev_config = dotenv_values(find_dotenv(".env/.env.dev"))

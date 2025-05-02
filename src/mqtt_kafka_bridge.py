@@ -5,6 +5,7 @@ if sys.version_info >= (3, 12, 0):
     sys.modules['kafka.vendor.six.moves'] = six.moves
 
 import json
+
 import kafka
 import paho.mqtt.client as mqtt
 from dotenv import dotenv_values, find_dotenv
