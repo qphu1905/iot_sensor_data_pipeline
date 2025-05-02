@@ -1,18 +1,12 @@
-import sys
-#Fix for missing kafka module
-if sys.version_info >= (3, 12, 0):
-    import six
-    sys.modules['kafka.vendor.six.moves'] = six.moves
-
-import streamlit as st
-import sqlalchemy as db
-from urllib.parse import quote_plus
-import pandas as pd
-import numpy as np
 import json
-from dotenv import dotenv_values, find_dotenv
 from datetime import date, time, timedelta
+from time import sleep
+from urllib.parse import quote_plus
 
+import pandas as pd
+import sqlalchemy as db
+import streamlit as st
+from dotenv import dotenv_values, find_dotenv
 
 dev_config = dotenv_values(find_dotenv(".env/env.dev"))
 secret_config = dotenv_values(find_dotenv(".env/env.secret"))
@@ -21,9 +15,7 @@ POSTGRES_SERVER_ADDRESS = dev_config['POSTGRES_SERVER_ADDRESS']
 POSTGRES_USERNAME = secret_config['POSTGRES_USERNAME']
 POSTGRES_PASSWORD = secret_config['POSTGRES_PASSWORD']
 
-KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
-
-kafka_consumer_topic = 'WARNING'
+auto_rerun_interval = 20
 
 
 def create_database_engine() -> db.engine.Engine:
@@ -228,4 +220,10 @@ def main():
 
         filtered_period_data_df.rename(columns=lambda x: x.capitalize(), inplace=True)
         st.line_chart(filtered_period_data_df)
-main()
+
+    sleep(auto_rerun_interval)
+    st.rerun()
+
+
+if __name__ == '__main__':
+    main()
