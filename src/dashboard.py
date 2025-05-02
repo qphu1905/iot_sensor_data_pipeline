@@ -76,9 +76,7 @@ def load_location_data(db_engine):
 
 def filter_daily(df: pd.DataFrame, date_id, groupby) -> pd.DataFrame:
     mask = df['date_id'] == date_id
-    print(df[mask])
     df = df[mask].dropna().reset_index(drop=True)
-    print(df)
     if groupby == 'minute':
         df = df[['temperature', 'feels_like_temperature', 'humidity', 'hour', 'minute']]
         df = df.groupby(['hour', 'minute']).mean().dropna().reset_index().sort_values(by=['hour', 'minute'])
