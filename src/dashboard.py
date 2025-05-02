@@ -44,7 +44,7 @@ def load_weather_data(db_engine, location_name):
     with db_engine.begin() as connection:
         stmt = (
             db.select(
-                weather_data.c.temperature, weather_data.c.humidity, weather_data.c.feels_like_temperature,
+                weather_data.c.id, weather_data.c.temperature, weather_data.c.humidity, weather_data.c.feels_like_temperature,
                 location_dimension.c.location_name, location_dimension.c.latitude, location_dimension.c.longtitude,
                 date_dimension.c.date_id, date_dimension.c.year, date_dimension.c.month, date_dimension.c.day, date_dimension.c.month_name, date_dimension.c.day_name,
                 time_dimension.c.time_id, time_dimension.c.hour, time_dimension.c.minute,
@@ -52,6 +52,7 @@ def load_weather_data(db_engine, location_name):
             )
             .select_from(j)
             .where(location_dimension.c.location_name == location_name)
+            .order_by(weather_data.c.id)
             )
         result = connection.execute(stmt)
     df = pd.DataFrame(result)
@@ -164,6 +165,11 @@ def main():
         with col3:
             st.metric('Humidity', f'{humidity}%', border=3)
 
+    warning_container = st.container(border=3)
+    with warning_container:
+        warning = location_weather_data_df['warning_text'].iloc[-1]
+        st.subheader(warning)
+
     daily_metric_graph_container = st.container()
     with daily_metric_graph_container:
         col1, col2 = st.columns(2)
@@ -226,7 +232,7 @@ def main():
             filtered_period_data_df.rename(columns=lambda x: x.capitalize(), inplace=True)
             st.line_chart(filtered_period_data_df)
 
-    sleep(auto_rerun_interval)
+    sleep(300)
     st.rerun()
 
 
