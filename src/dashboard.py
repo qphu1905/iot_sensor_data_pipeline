@@ -15,7 +15,7 @@ POSTGRES_SERVER_ADDRESS = dev_config['POSTGRES_SERVER_ADDRESS']
 POSTGRES_USERNAME = secret_config['POSTGRES_USERNAME']
 POSTGRES_PASSWORD = secret_config['POSTGRES_PASSWORD']
 
-auto_rerun_interval = 20
+auto_rerun_interval = 60
 
 
 def create_database_engine() -> db.engine.Engine:
@@ -201,30 +201,32 @@ def main():
 
         with col1:
             period_metric_period = st.date_input(label='Select period:', value=(date.today() - timedelta(days=30), date.today()))
-            period_start_date = period_metric_period[0]
-            period_end_date = period_metric_period[1]
         with col2:
             period_metric_groupby = st.selectbox(label='Group by:', options=['year', 'month', 'day'], format_func=lambda x: x.capitalize(), index=2)
 
-        filtered_period_data_df = filter_period(location_weather_data_df, period_start_date, period_end_date, period_metric_groupby)
+        if len(period_metric_period) == 2:
 
-        col4, col5, col6 = st.columns(3)
+            period_start_date = period_metric_period[0]
+            period_end_date = period_metric_period[1]
+            filtered_period_data_df = filter_period(location_weather_data_df, period_start_date, period_end_date, period_metric_groupby)
 
-        with col4:
-            show_temperature = st.checkbox(label='Show temperature', value=True, key='show_temperature_period')
-        with col5:
-            show_feels_like = st.checkbox(label='Show feels like temperature', value=True, key='show_feels_like_period')
-        with col6:
-            show_humidity = st.checkbox(label='Show humidity', value=True, key='show_humidity_period')
-        if not show_temperature:
-            filtered_period_data_df.drop(['temperature'], axis=1, inplace=True)
-        if not show_feels_like:
-            filtered_period_data_df.drop(['feels_like_temperature'], axis=1, inplace=True)
-        if not show_humidity:
-            filtered_period_data_df.drop(['humidity'], axis=1, inplace=True)
+            col4, col5, col6 = st.columns(3)
 
-        filtered_period_data_df.rename(columns=lambda x: x.capitalize(), inplace=True)
-        st.line_chart(filtered_period_data_df)
+            with col4:
+                show_temperature = st.checkbox(label='Show temperature', value=True, key='show_temperature_period')
+            with col5:
+                show_feels_like = st.checkbox(label='Show feels like temperature', value=True, key='show_feels_like_period')
+            with col6:
+                show_humidity = st.checkbox(label='Show humidity', value=True, key='show_humidity_period')
+            if not show_temperature:
+                filtered_period_data_df.drop(['temperature'], axis=1, inplace=True)
+            if not show_feels_like:
+                filtered_period_data_df.drop(['feels_like_temperature'], axis=1, inplace=True)
+            if not show_humidity:
+                filtered_period_data_df.drop(['humidity'], axis=1, inplace=True)
+
+            filtered_period_data_df.rename(columns=lambda x: x.capitalize(), inplace=True)
+            st.line_chart(filtered_period_data_df)
 
     sleep(auto_rerun_interval)
     st.rerun()
