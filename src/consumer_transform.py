@@ -58,7 +58,7 @@ def calculate_apparent_temperature(temperature: float, humidity: float) -> float
             return apparent_temperature
 
 
-def warning(apparent_temperature: float) -> int:
+def calculate_warning_level(apparent_temperature: float) -> int:
     """Calculate warning level for given apparent temperature.
     :parameter: apparent_temperature: float
     :return: warning_level: int
@@ -89,14 +89,14 @@ def transform(message: dict) -> dict:
     temperature = message['temperature']
     humidity = message['humidity']
     feels_like_temperature = calculate_apparent_temperature(temperature, humidity)
-
+    warning = calculate_warning_level(feels_like_temperature)
     #calculate timestamp
     time_id = datetime.datetime.now().strftime('%H:%M:00')
     date_id = datetime.datetime.now().strftime('%Y-%m-%d')
 
     #transform message
     message['feels_like_temperature'] = feels_like_temperature
-    message['warning_level'] = warning(feels_like_temperature)
+    message['warning_level'] = warning
     message['time_id'] = time_id
     message['date_id'] = date_id
     return message
