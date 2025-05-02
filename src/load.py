@@ -42,7 +42,8 @@ def create_entry(message: dict) -> dict:
         "humidity": message['humidity'],
         "feels_like_temperature": message['feels_like_temperature'],
         "date_id": message['date_id'],
-        "time_id": message['time_id']
+        "time_id": message['time_id'],
+        "warning_level": message['warning_level']
     }
     return entry
 
