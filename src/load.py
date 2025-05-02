@@ -14,8 +14,8 @@ from dotenv import dotenv_values, find_dotenv
 from my_logger import my_logger
 
 #load environment variables
-dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
-secret_config = dotenv_values(find_dotenv(".env/.env.secret"))
+dev_config = dotenv_values(find_dotenv(".env/env.dev"))
+secret_config = dotenv_values(find_dotenv(".env/env.secret"))
 
 POSTGRES_SERVER_ADDRESS = dev_config['POSTGRES_SERVER_ADDRESS']
 POSTGRES_USERNAME = secret_config['POSTGRES_USERNAME']
