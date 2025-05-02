@@ -13,7 +13,7 @@ from dotenv import dotenv_values, find_dotenv
 
 from my_logger import my_logger
 
-dev_config = dotenv_values(find_dotenv(".env/.env.dev"))
+dev_config = dotenv_values(find_dotenv(".env/env.dev"))
 KAFKA_BROKER_ADDRESS = json.loads(dev_config['KAFKA_BROKER_ADDRESS'])
 
 kafka_producer_topic = 'RAW-DATA'
