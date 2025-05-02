@@ -42,7 +42,7 @@ def calculate_apparent_temperature(temperature: float, humidity: float) -> float
     c8: float = 7.2546 * 10 ** (-4)
     c9: float = -3.582 * 10 ** (-6)
 
-    if humidity < 0.40:
+    if humidity < 40:
         return temperature
     #lower limit of heat index
     else:
