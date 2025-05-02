@@ -124,6 +124,11 @@ def filter_period(df: pd.DataFrame, start_date_id, end_date_id, groupby) -> pd.D
 def main():
     db_engine = create_database_engine()
 
+    st.set_page_config(
+        page_title='Weather data dashboard',
+        page_icon='🌦️',
+        layout='wide'
+    )
     st.title('Dashboard')
 
     location_data_container = st.container(border=3)
